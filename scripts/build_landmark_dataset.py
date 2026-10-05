@@ -21,6 +21,12 @@ LANDMARK_FEATURES = 21 * 3
 MAX_HANDS = 2
 
 
+def image_sort_key(path: Path, dataset_root: Path) -> tuple[object, object, str]:
+    """Sort numeric class folders numerically, with nonnumeric folders last."""
+    label = path.relative_to(dataset_root).parts[0]
+    return (0, int(label), str(path)) if label.isdigit() else (1, label, str(path))
+
+
 def feature_names() -> list[str]:
     names = ["image_path", "label", "detected_hands"]
     for side in ("left", "right"):
@@ -90,7 +96,10 @@ def main() -> None:
     providers = ["CPUExecutionProvider"]
     detector = PalmDetection(str(args.palm_model), providers=providers)
     landmarker = HandLandmark(str(args.hand_model), providers=providers)
-    images = sorted(path for path in args.dataset_root.rglob("*") if path.suffix.lower() in IMAGE_EXTENSIONS)
+    images = sorted(
+        (path for path in args.dataset_root.rglob("*") if path.suffix.lower() in IMAGE_EXTENSIONS),
+        key=lambda path: image_sort_key(path, args.dataset_root),
+    )
     existing: set[str] = set()
     if args.resume and args.output_csv.exists():
         with args.output_csv.open(newline="") as file:
