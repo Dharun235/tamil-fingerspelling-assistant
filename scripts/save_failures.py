@@ -52,6 +52,7 @@ def main() -> None:
     for index in np.concatenate((correct, wrong)):
         image_path = args.dataset_root / str(paths[index])
         image = cv2.imread(str(image_path))
+        original = image.copy()
         landmarks, scores, handedness = process(image, detector, landmarker, options)
         for points, score, hand_prob in zip(landmarks, scores, handedness, strict=True):
             annotate(image, points, float(score), float(hand_prob))
@@ -67,12 +68,19 @@ def main() -> None:
         else:
             folder = args.output_dir / group / f"actual_{actual}_pred_{predicted}"
         folder.mkdir(parents=True, exist_ok=True)
-        output = folder / f"{len(rows):04d}.jpg"
-        cv2.imwrite(str(output), image)
-        rows.append((group, actual, predicted, confidence, str(paths[index]), str(output)))
+        case_dir = folder / f"{len(rows):04d}"
+        case_dir.mkdir(parents=True, exist_ok=True)
+        original_output = case_dir / "original.jpg"
+        prediction_output = case_dir / "prediction.jpg"
+        comparison_output = case_dir / "comparison.jpg"
+        cv2.imwrite(str(original_output), original)
+        cv2.imwrite(str(prediction_output), image)
+        comparison = np.concatenate((original, image), axis=1)
+        cv2.imwrite(str(comparison_output), comparison)
+        rows.append((group, actual, predicted, confidence, str(paths[index]), str(original_output), str(prediction_output), str(comparison_output)))
     with (args.output_dir / "index.csv").open("w", newline="") as file:
         writer = csv.writer(file)
-        writer.writerow(["group", "actual", "predicted", "confidence", "image_path", "output"])
+        writer.writerow(["group", "actual", "predicted", "confidence", "image_path", "original", "prediction", "comparison"])
         writer.writerows(rows)
     print(f"wrong={len(wrong)} correct={len(correct)} output={args.output_dir}")
 

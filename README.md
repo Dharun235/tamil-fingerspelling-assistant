@@ -119,7 +119,7 @@ python scripts/save_failures.py \
   --test data/splits/test.npz
 ```
 
-Outputs are separated into `output/cases/correct/` and `output/cases/wrong/`, with class folders and an `index.csv` manifest.
+Outputs are separated into `output/cases/correct/` and `output/cases/wrong/`, with class folders. Each case stores `original.jpg`, annotated `prediction.jpg`, side-by-side `comparison.jpg`, and an `index.csv` manifest.
 
 Run live webcam prediction:
 
