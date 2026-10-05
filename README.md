@@ -78,6 +78,23 @@ CSV contains one row per image, two fixed hand slots (`left`, `right`), confiden
 
 The model returns `(N, 21, 3)` landmarks for `N` hands. Later MLP training can use two fixed hand slots, wrist-relative normalization, hand scale, confidence, and hand-center position.
 
+## Train and run classifier
+
+Train a small experiment using completed classes in the CSV:
+
+```bash
+python scripts/train_mlp.py data/landmarks.csv \
+  --classes 10 --per-class 500 --model output/mlp_subset.joblib
+```
+
+Run live webcam prediction:
+
+```bash
+python scripts/realtime_predict.py --model output/mlp_subset.joblib
+```
+
+Press `q` or `Esc` to quit. The classifier predicts only classes included during training.
+
 ## Dataset attribution
 
 Example images come from **TLFS23 – Tamil Language Finger Spelling Image Dataset**, containing 248 classes and 255,155 images. Dataset license: **CC BY 4.0**. Credit:
@@ -95,6 +112,8 @@ ONNX inference implementation and converted hand models adapted from [yakhyo/med
 ```text
 scripts/hand_pose_onnx.py  # inference CLI
 scripts/build_landmark_dataset.py  # images → landmark CSV
+scripts/train_mlp.py        # landmark CSV → classifier
+scripts/realtime_predict.py # webcam → landmarks → class text
 models/                    # ONNX model architecture/post-processing
 requirements.txt           # CPU dependencies
 ```
