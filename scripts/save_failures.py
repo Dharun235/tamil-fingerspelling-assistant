@@ -29,6 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=ROOT / "output" / "cases")
     parser.add_argument("--limit", type=int, default=100, help="Maximum wrong examples")
     parser.add_argument("--correct-limit", type=int, default=100, help="Maximum correct examples")
+    parser.add_argument("--min-hands", type=int, default=2, help="Only include samples with at least this many detected hands")
     return parser.parse_args()
 
 
@@ -39,14 +40,15 @@ def main() -> None:
     model = joblib.load(args.model)
     predictions = model.predict(split["x"])
     probabilities = model.predict_proba(split["x"])
-    wrong = np.flatnonzero(predictions != split["y"])
+    valid = split["x"][:, 0] >= args.min_hands
+    wrong = np.flatnonzero((predictions != split["y"]) & valid)
     wrong = wrong[np.argsort(-probabilities[wrong].max(axis=1))][: args.limit]
-    correct = np.flatnonzero(predictions == split["y"])
+    correct = np.flatnonzero((predictions == split["y"]) & valid)
     correct = correct[: args.correct_limit]
 
     # Prefer a correctly classified test image as the visual example for each class.
     example_paths: dict[str, str] = {}
-    for index in np.flatnonzero(predictions == split["y"]):
+    for index in np.flatnonzero((predictions == split["y"]) & valid):
         example_paths.setdefault(str(split["y"][index]), str(paths[index]))
     for index in range(len(paths)):
         example_paths.setdefault(str(split["y"][index]), str(paths[index]))
@@ -108,7 +110,7 @@ def main() -> None:
         writer = csv.writer(file)
         writer.writerow(["group", "actual", "predicted", "confidence", "image_path", "original", "prediction", "predicted_class_example", "comparison"])
         writer.writerows(rows)
-    print(f"wrong={len(wrong)} correct={len(correct)} output={args.output_dir}")
+    print(f"min_hands={args.min_hands} wrong={len(wrong)} correct={len(correct)} output={args.output_dir}")
 
 
 if __name__ == "__main__":

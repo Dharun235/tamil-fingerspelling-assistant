@@ -121,6 +121,8 @@ python scripts/save_failures.py \
 
 Outputs are separated into `output/cases/correct/` and `output/cases/wrong/`, with class folders. Each case stores `original.jpg`, annotated `prediction.jpg`, side-by-side `comparison.jpg`, and an `index.csv` manifest.
 
+Failure export defaults to samples where at least two hands were detected. Use `--min-hands 1` to include one-hand samples.
+
 Run live webcam prediction:
 
 ```bash
