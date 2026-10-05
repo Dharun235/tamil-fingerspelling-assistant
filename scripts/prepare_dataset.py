@@ -29,12 +29,15 @@ def main() -> None:
 
     features = frame.iloc[:, 2:].to_numpy(dtype=np.float32)
     labels = frame["label"].to_numpy(dtype="U")
-    x_train, x_test, y_train, y_test = train_test_split(
-        features, labels, test_size=args.test_size, random_state=42, stratify=labels
+    paths = frame["image_path"].to_numpy(dtype="U")
+    x_train, x_test, y_train, y_test, paths_train, paths_test = train_test_split(
+        features, labels, paths, test_size=args.test_size, random_state=42, stratify=labels
     )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(args.output_dir / "train.npz", x=x_train, y=y_train)
     np.savez_compressed(args.output_dir / "test.npz", x=x_test, y=y_test)
+    np.save(args.output_dir / "train_paths.npy", paths_train)
+    np.save(args.output_dir / "test_paths.npy", paths_test)
     metadata = {
         "source_csv": str(args.csv),
         "rows": len(frame),

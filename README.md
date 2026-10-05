@@ -111,6 +111,14 @@ python scripts/evaluate.py \
   --test data/splits/test.npz
 ```
 
+Save up to 100 misclassified test images for inspection:
+
+```bash
+python scripts/save_failures.py \
+  --model output/mlp.joblib \
+  --test data/splits/test.npz
+```
+
 Run live webcam prediction:
 
 ```bash
@@ -139,6 +147,7 @@ scripts/build_landmark_dataset.py  # images → landmark CSV
 scripts/prepare_dataset.py  # CSV → train/test arrays
 scripts/train_mlp.py        # train split → saved classifier
 scripts/evaluate.py         # test split → metrics/confusion matrix
+scripts/save_failures.py    # save misclassified test images
 scripts/realtime_predict.py # webcam → landmarks → class text
 models/                    # ONNX model architecture/post-processing
 requirements.txt           # CPU dependencies
