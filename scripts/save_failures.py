@@ -96,9 +96,12 @@ def main() -> None:
         original_text = f"actual class {actual}"
         cv2.rectangle(original_labeled, (8, 8), (330, 55), (0, 0, 0), -1)
         cv2.putText(original_labeled, original_text, (16, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.62, (0, 255, 255), 2, cv2.LINE_AA)
-        if original_labeled.shape[0] != example.shape[0]:
-            example = cv2.resize(example, (example.shape[1], original_labeled.shape[0]))
-        comparison = np.concatenate((original_labeled, example), axis=1)
+        target_height = original_labeled.shape[0]
+        if image.shape[0] != target_height:
+            image = cv2.resize(image, (image.shape[1], target_height))
+        if example.shape[0] != target_height:
+            example = cv2.resize(example, (example.shape[1], target_height))
+        comparison = np.concatenate((original_labeled, image, example), axis=1)
         cv2.imwrite(str(comparison_output), comparison)
         rows.append((group, actual, predicted, confidence, str(paths[index]), str(original_output), str(prediction_output), str(example_output), str(comparison_output)))
     with (args.output_dir / "index.csv").open("w", newline="") as file:
