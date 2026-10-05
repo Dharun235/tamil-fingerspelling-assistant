@@ -1,0 +1,17 @@
+# Local dataset
+data/
+
+# Downloaded ONNX weights
+weights/
+
+# Python
+.venv*/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Generated output
+output/
+
+# macOS
+.DS_Store
