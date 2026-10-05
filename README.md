@@ -8,12 +8,14 @@ CPU hand-pose extraction for still images. This repository contains only the han
 image → BlazePalm detector → hand crop → 21 landmarks per hand
 ```
 
-For each detected hand, output includes:
+For each detected hand, runtime output includes:
 
 - 21 `(x, y, z)` landmarks
 - hand-presence confidence
 - handedness probability
 - annotated skeleton image
+
+For classifier training, `build_landmark_dataset.py` saves normalized landmark coordinates in a CSV. Image pixels are not copied into that CSV.
 
 No MediaPipe Python runtime, GUI, or GPU required. Inference uses ONNX Runtime CPU.
 
@@ -51,6 +53,26 @@ python scripts/hand_pose_onnx.py \
 
 Output image shows hand skeleton, landmarks, handedness, and confidence.
 
+## Build landmark dataset
+
+Dataset folders become class labels. For example, every image under `Dataset Folders/1/` gets label `1`.
+
+```bash
+python scripts/build_landmark_dataset.py \
+  "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Dataset Folders" \
+  --output-csv data/landmarks.csv
+```
+
+CSV contains one row per image, two fixed hand slots (`left`, `right`), confidence values, and 21 normalized `(x, y, z)` landmarks per hand. Coordinates are wrist-relative and scale-normalized, so image resolution and hand position matter less. `data/landmarks.csv` is ignored by Git.
+
+## Train MLP classifier
+
+```bash
+python scripts/train_mlp.py data/landmarks.csv --model output/mlp.joblib
+```
+
+This uses a scikit-learn MLP, stratified train/test split, standardization, and prints a classification report. The saved model is ignored by Git.
+
 ## Landmark order
 
 ```text
@@ -80,6 +102,8 @@ ONNX inference implementation and converted hand models adapted from [yakhyo/med
 
 ```text
 scripts/hand_pose_onnx.py  # inference CLI
+scripts/build_landmark_dataset.py  # images → landmark CSV
+scripts/train_mlp.py        # landmark CSV → MLP classifier
 models/                    # ONNX model architecture/post-processing
 requirements.txt           # CPU dependencies
 ```

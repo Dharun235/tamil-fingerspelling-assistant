@@ -12,6 +12,7 @@ __pycache__/
 
 # Generated output
 output/
+*.joblib
 
 # macOS
 .DS_Store
