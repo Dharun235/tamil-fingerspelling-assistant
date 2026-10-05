@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import random
 from pathlib import Path
 import sys
 
@@ -84,6 +85,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--det-threshold", type=float, default=0.5)
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--limit", type=int, default=None, help="Process only first N images (useful for a speed test)")
+    parser.add_argument("--max-per-class", type=int, default=None, help="Deterministically sample at most N images from each class")
     parser.add_argument("--resume", action="store_true", help="Append to existing CSV and skip image paths already present")
     return parser.parse_args()
 
@@ -100,6 +102,14 @@ def main() -> None:
         (path for path in args.dataset_root.rglob("*") if path.suffix.lower() in IMAGE_EXTENSIONS),
         key=lambda path: image_sort_key(path, args.dataset_root),
     )
+    if args.max_per_class:
+        grouped: dict[str, list[Path]] = {}
+        for image in images:
+            label = image.relative_to(args.dataset_root).parts[0]
+            grouped.setdefault(label, []).append(image)
+        rng = random.Random(42)
+        images = [image for label in sorted(grouped, key=lambda value: (0, int(value)) if value.isdigit() else (1, value)) for image in rng.sample(grouped[label], min(args.max_per_class, len(grouped[label])))]
+        images.sort(key=lambda path: image_sort_key(path, args.dataset_root))
     existing: set[str] = set()
     if args.resume and args.output_csv.exists():
         with args.output_csv.open(newline="") as file:

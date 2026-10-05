@@ -63,6 +63,15 @@ python scripts/build_landmark_dataset.py \
   --output-csv data/landmarks.csv
 ```
 
+For a faster balanced experiment, process 100 sampled images per class:
+
+```bash
+python scripts/build_landmark_dataset.py \
+  "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Dataset Folders" \
+  --max-per-class 100 \
+  --output-csv data/landmarks_100.csv
+```
+
 CSV contains one row per image, two fixed hand slots (`left`, `right`), confidence values, and 21 normalized `(x, y, z)` landmarks per hand. Coordinates are wrist-relative and scale-normalized, so image resolution and hand position matter less. `data/landmarks.csv` is ignored by Git.
 
 ## Landmark order
