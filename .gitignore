@@ -16,3 +16,4 @@ output/
 
 # macOS
 .DS_Store
+:memory:.ses
