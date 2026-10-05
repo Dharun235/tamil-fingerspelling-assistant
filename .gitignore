@@ -1,5 +1,6 @@
 # Local dataset
 data/
+!data/README.md
 
 # Downloaded ONNX weights
 weights/
