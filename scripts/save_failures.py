@@ -75,7 +75,11 @@ def main() -> None:
         comparison_output = case_dir / "comparison.jpg"
         cv2.imwrite(str(original_output), original)
         cv2.imwrite(str(prediction_output), image)
-        comparison = np.concatenate((original, image), axis=1)
+        original_labeled = original.copy()
+        original_text = f"actual class {actual}"
+        cv2.rectangle(original_labeled, (8, 8), (330, 55), (0, 0, 0), -1)
+        cv2.putText(original_labeled, original_text, (16, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.62, (0, 255, 255), 2, cv2.LINE_AA)
+        comparison = np.concatenate((original_labeled, image), axis=1)
         cv2.imwrite(str(comparison_output), comparison)
         rows.append((group, actual, predicted, confidence, str(paths[index]), str(original_output), str(prediction_output), str(comparison_output)))
     with (args.output_dir / "index.csv").open("w", newline="") as file:
