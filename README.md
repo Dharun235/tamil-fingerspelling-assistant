@@ -111,13 +111,15 @@ python scripts/evaluate.py \
   --test data/splits/test.npz
 ```
 
-Save up to 100 misclassified test images for inspection:
+Save up to 100 correct and 100 wrong test images for inspection:
 
 ```bash
 python scripts/save_failures.py \
   --model output/mlp.joblib \
   --test data/splits/test.npz
 ```
+
+Outputs are separated into `output/cases/correct/` and `output/cases/wrong/`, with class folders and an `index.csv` manifest.
 
 Run live webcam prediction:
 

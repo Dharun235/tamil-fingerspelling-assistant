@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from pathlib import Path
 import sys
 
@@ -25,8 +26,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test", type=Path, default=ROOT / "data" / "splits" / "test.npz")
     parser.add_argument("--test-paths", type=Path, default=ROOT / "data" / "splits" / "test_paths.npy")
     parser.add_argument("--dataset-root", type=Path, default=ROOT / "data" / "TLFS23 - Tamil Language Finger Spelling Image Dataset" / "Dataset Folders")
-    parser.add_argument("--output-dir", type=Path, default=ROOT / "output" / "failures")
-    parser.add_argument("--limit", type=int, default=100)
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "output" / "cases")
+    parser.add_argument("--limit", type=int, default=100, help="Maximum wrong examples")
+    parser.add_argument("--correct-limit", type=int, default=100, help="Maximum correct examples")
     return parser.parse_args()
 
 
@@ -37,15 +39,17 @@ def main() -> None:
     model = joblib.load(args.model)
     predictions = model.predict(split["x"])
     probabilities = model.predict_proba(split["x"])
-    failed = np.flatnonzero(predictions != split["y"])
-    failed = failed[np.argsort(-probabilities[failed].max(axis=1))][: args.limit]
+    wrong = np.flatnonzero(predictions != split["y"])
+    wrong = wrong[np.argsort(-probabilities[wrong].max(axis=1))][: args.limit]
+    correct = np.flatnonzero(predictions == split["y"])
+    correct = correct[: args.correct_limit]
 
     detector = PalmDetection(str(ROOT / "weights" / "palm_detection_full_Nx3x192x192.onnx"), providers=["CPUExecutionProvider"])
     landmarker = HandLandmark(str(ROOT / "weights" / "hand_landmark_full_Nx3x224x224.onnx"), providers=["CPUExecutionProvider"])
     options = argparse.Namespace(det_threshold=0.5, threshold=0.5)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     rows = []
-    for index in failed:
+    for index in np.concatenate((correct, wrong)):
         image_path = args.dataset_root / str(paths[index])
         image = cv2.imread(str(image_path))
         landmarks, scores, handedness = process(image, detector, landmarker, options)
@@ -56,11 +60,21 @@ def main() -> None:
         text = f"actual {actual} | predicted {predicted} | {confidence:.1%}"
         cv2.rectangle(image, (8, 8), (630, 55), (0, 0, 0), -1)
         cv2.putText(image, text, (16, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.62, (0, 255, 255), 2, cv2.LINE_AA)
-        output = args.output_dir / f"{len(rows):04d}_actual-{actual}_pred-{predicted}.jpg"
+        is_correct = actual == predicted
+        group = "correct" if is_correct else "wrong"
+        if is_correct:
+            folder = args.output_dir / group / f"class_{actual}"
+        else:
+            folder = args.output_dir / group / f"actual_{actual}_pred_{predicted}"
+        folder.mkdir(parents=True, exist_ok=True)
+        output = folder / f"{len(rows):04d}.jpg"
         cv2.imwrite(str(output), image)
-        rows.append((actual, predicted, confidence, str(paths[index]), str(output)))
-    np.savetxt(args.output_dir / "index.csv", np.asarray(rows, dtype=str), fmt="%s", delimiter=",", header="actual,predicted,confidence,image_path,output", comments="")
-    print(f"failures={len(failed)} saved={len(rows)} output={args.output_dir}")
+        rows.append((group, actual, predicted, confidence, str(paths[index]), str(output)))
+    with (args.output_dir / "index.csv").open("w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["group", "actual", "predicted", "confidence", "image_path", "output"])
+        writer.writerows(rows)
+    print(f"wrong={len(wrong)} correct={len(correct)} output={args.output_dir}")
 
 
 if __name__ == "__main__":
