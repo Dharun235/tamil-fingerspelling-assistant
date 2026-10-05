@@ -87,49 +87,30 @@ CSV contains one row per image, two fixed hand slots (`left`, `right`), confiden
 
 The model returns `(N, 21, 3)` landmarks for `N` hands. Later MLP training can use two fixed hand slots, wrist-relative normalization, hand scale, confidence, and hand-center position.
 
-## Prepare, train, evaluate, predict
+## Train and evaluate
 
-Create a stratified 80/20 train/test split. No validation split used:
-
-```bash
-python scripts/prepare_dataset.py data/landmarks.csv
-```
-
-Train and save MLP:
+Run one command after `data/landmarks.csv` is complete:
 
 ```bash
-python scripts/train_mlp.py \
-  --train data/splits/train.npz \
-  --model output/mlp.joblib
+python main.py
 ```
 
-Evaluate held-out test data:
+This performs a stratified random 70/30 train/test split, trains the MLP, and saves everything under `results/`:
 
-```bash
-python scripts/evaluate.py \
-  --model output/mlp.joblib \
-  --test data/splits/test.npz
+```text
+results/
+├── mlp.joblib
+├── run.log
+├── metrics.json
+├── classification_report.csv
+├── confusion_matrix.csv
+├── feature_correlation.csv
+├── test_predictions.csv
+├── test_labels.npy
+└── test_predictions.npy
 ```
 
-Save up to 100 correct and 100 wrong test images for inspection:
-
-```bash
-python scripts/save_failures.py \
-  --model output/mlp.joblib \
-  --test data/splits/test.npz
-```
-
-Outputs are separated into `output/cases/correct/` and `output/cases/wrong/`, with class folders. Each case stores `original.jpg`, annotated `prediction.jpg`, side-by-side `comparison.jpg`, and an `index.csv` manifest.
-
-Failure export defaults to samples where at least two hands were detected. Use `--min-hands 1` to include one-hand samples.
-
-Run live webcam prediction:
-
-```bash
-python scripts/realtime_predict.py --model output/mlp.joblib
-```
-
-Press `q` or `Esc` to quit. The classifier predicts only classes included during training.
+Reported metrics: accuracy, balanced accuracy, macro precision/recall/F1, weighted F1, top-3 accuracy, per-class report, and confusion matrix. Feature correlation is diagnostic, not a performance metric.
 
 ## Dataset attribution
 
@@ -148,11 +129,7 @@ ONNX inference implementation and converted hand models adapted from [yakhyo/med
 ```text
 scripts/hand_pose_onnx.py  # inference CLI
 scripts/build_landmark_dataset.py  # images → landmark CSV
-scripts/prepare_dataset.py  # CSV → train/test arrays
-scripts/train_mlp.py        # train split → saved classifier
-scripts/evaluate.py         # test split → metrics/confusion matrix
-scripts/save_failures.py    # save misclassified test images
-scripts/realtime_predict.py # webcam → landmarks → class text
+main.py                    # split → train → evaluate → save results
 models/                    # ONNX model architecture/post-processing
 requirements.txt           # CPU dependencies
 ```
