@@ -65,14 +65,6 @@ python scripts/build_landmark_dataset.py \
 
 CSV contains one row per image, two fixed hand slots (`left`, `right`), confidence values, and 21 normalized `(x, y, z)` landmarks per hand. Coordinates are wrist-relative and scale-normalized, so image resolution and hand position matter less. `data/landmarks.csv` is ignored by Git.
 
-## Train MLP classifier
-
-```bash
-python scripts/train_mlp.py data/landmarks.csv --model output/mlp.joblib
-```
-
-This uses a scikit-learn MLP, stratified train/test split, standardization, and prints a classification report. The saved model is ignored by Git.
-
 ## Landmark order
 
 ```text
@@ -103,7 +95,6 @@ ONNX inference implementation and converted hand models adapted from [yakhyo/med
 ```text
 scripts/hand_pose_onnx.py  # inference CLI
 scripts/build_landmark_dataset.py  # images → landmark CSV
-scripts/train_mlp.py        # landmark CSV → MLP classifier
 models/                    # ONNX model architecture/post-processing
 requirements.txt           # CPU dependencies
 ```
