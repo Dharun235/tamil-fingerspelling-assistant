@@ -77,6 +77,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hand-model", type=Path, default=ROOT / "weights" / "hand_landmark_full_Nx3x224x224.onnx")
     parser.add_argument("--det-threshold", type=float, default=0.5)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument("--limit", type=int, default=None, help="Process only first N images (useful for a speed test)")
+    parser.add_argument("--resume", action="store_true", help="Append to existing CSV and skip image paths already present")
     return parser.parse_args()
 
 
@@ -89,13 +91,22 @@ def main() -> None:
     detector = PalmDetection(str(args.palm_model), providers=providers)
     landmarker = HandLandmark(str(args.hand_model), providers=providers)
     images = sorted(path for path in args.dataset_root.rglob("*") if path.suffix.lower() in IMAGE_EXTENSIONS)
+    existing: set[str] = set()
+    if args.resume and args.output_csv.exists():
+        with args.output_csv.open(newline="") as file:
+            existing = {row[0] for row in csv.reader(file) if row and row[0] != "image_path"}
+        images = [path for path in images if str(path.relative_to(args.dataset_root)) not in existing]
+    if args.limit is not None:
+        images = images[:args.limit]
     if not images:
         raise SystemExit(f"No images found under {args.dataset_root}")
 
     written = 0
-    with args.output_csv.open("w", newline="") as file:
+    mode = "a" if args.resume and args.output_csv.exists() else "w"
+    with args.output_csv.open(mode, newline="") as file:
         writer = csv.writer(file)
-        writer.writerow(feature_names())
+        if mode == "w":
+            writer.writerow(feature_names())
         for number, image_path in enumerate(images, start=1):
             relative = image_path.relative_to(args.dataset_root)
             label = relative.parts[0]
@@ -103,6 +114,7 @@ def main() -> None:
             if row is not None:
                 writer.writerow(row)
                 written += 1
+                file.flush()
             if number % 100 == 0 or number == len(images):
                 print(f"processed {number}/{len(images)} images; saved {written} rows")
 
