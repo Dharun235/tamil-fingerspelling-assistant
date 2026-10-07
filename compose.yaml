@@ -1,0 +1,13 @@
+services:
+  fingerspelling:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+    volumes:
+      - rtmlib-cache:/root/.cache/rtmlib
+    restart: unless-stopped
+
+volumes:
+  rtmlib-cache:

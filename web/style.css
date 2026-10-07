@@ -1,0 +1,27 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { margin: 0; background: #101318; color: #f3f4f6; }
+main { width: min(960px, 100vw); height: 100dvh; margin: 0 auto; padding: 12px 3vw; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+h1 { flex: 0 0 auto; margin: 0; text-align: center; font-size: clamp(1.05rem, 3vw, 1.45rem); }
+.camera-card { position: relative; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 16px; background: #000; }
+video { display: none; }
+canvas { display: block; width: 100%; height: auto; max-height: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
+.legend { position: absolute; right: 16px; top: 14px; display: flex; gap: 12px; padding: 8px 10px; background: #111b; border-radius: 8px; font-size: .85rem; }
+.on { color: #55dc70; } .off { color: #ff5b68; }
+.message-card { flex: 0 0 auto; padding: 12px 18px; border-radius: 16px; background: #1b2029; text-align: center; }
+#message { min-height: 1.4em; max-height: 2.8em; overflow: hidden; font-family: "Tamil Sangam MN", "Noto Sans Tamil", sans-serif; font-size: clamp(1.8rem, 6vw, 4.5rem); line-height: 1.25; overflow-wrap: anywhere; }
+#preview { margin: 10px; color: #55dcff; font-family: "Tamil Sangam MN", "Noto Sans Tamil", sans-serif; font-size: 1.7rem; }
+.status-row { display: flex; justify-content: space-between; color: #cbd5e1; font-size: .9rem; }
+.progress { height: 10px; margin: 7px 0 15px; border-radius: 99px; background: #384252; overflow: hidden; }
+#progress-bar { height: 100%; width: 0%; background: #55dcff; transition: width .08s linear; }
+.reverse-card { flex: 0 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 104px; gap: 6px 10px; align-items: center; padding: 8px 12px; border-radius: 12px; background: #171c24; }
+.reverse-card label { color: #cbd5e1; font-size: .82rem; }
+#text-input { min-width: 0; width: 100%; padding: 7px 9px; border: 1px solid #465264; border-radius: 7px; background: #0e1218; color: #fff; font: inherit; }
+#reference-empty, #reference-label { color: #9ca3af; font-size: .75rem; }
+#reference-image { display: none; grid-row: span 2; grid-column: 2; width: 104px; height: 78px; object-fit: contain; border-radius: 7px; background: #000; }
+#reference-label { grid-column: 1; }
+.start-button { display: block; margin: 14px auto 0; background: #1769aa; font-size: 1rem; }
+.start-button.stop { background: #a83232; }
+.start-button:disabled { opacity: .55; cursor: wait; }
+#connection { text-align: center; color: #9ca3af; }

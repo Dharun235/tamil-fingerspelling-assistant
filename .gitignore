@@ -1,6 +1,9 @@
 # Local dataset
-data/
-!data/README.md
+data/*
+!data/coordinate_thresholds.json
+!data/TLFS23 - Tamil Language Finger Spelling Image Dataset/
+data/TLFS23 - Tamil Language Finger Spelling Image Dataset/*
+!data/TLFS23 - Tamil Language Finger Spelling Image Dataset/ReadMe.txt
 
 # Downloaded ONNX weights
 weights/

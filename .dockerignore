@@ -1,0 +1,14 @@
+.git
+.venv
+__pycache__
+*.py[cod]
+.DS_Store
+output
+outputs
+results
+weights
+data/*
+!data/coordinate_thresholds.json
+!data/TLFS23 - Tamil Language Finger Spelling Image Dataset/
+!data/TLFS23 - Tamil Language Finger Spelling Image Dataset/ReadMe.txt
+!data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Refrence Image/

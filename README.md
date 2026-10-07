@@ -1,135 +1,141 @@
-# Tamil Fingerspelling Hand Pose
+# Tamil Fingerspelling Assistant
 
-CPU hand-pose extraction for still images. This repository contains only the hand-pose pipeline; Tamil-character classification comes later.
+Real-time Tamil fingerspelling assistance from a webcam. The browser displays detected finger state, gives immediate visual feedback, and converts stable signs into Tamil Unicode text.
 
 ## Pipeline
 
 ```text
-image → BlazePalm detector → hand crop → 21 landmarks per hand
+webcam → browser JPEG → FastAPI/WebSocket → OpenCV 5 preprocessing
+        → RTMPose hand detection + landmarks → geometric finger rules
+        → Tamil mapping → Tamil text
 ```
 
-For each detected hand, runtime output includes:
+The system is frame-based. A sign commits after 350 ms of stability. A fist commits a space. The user can stop/start the camera without stopping the AWS service.
 
-- 21 `(x, y, z)` landmarks
-- hand-presence confidence
-- handedness probability
-- annotated skeleton image
+This is an inference-and-integration project, not a model-training project. It combines pretrained RTMPose/RTMDet, geometric finger-state rules, Tamil sign mapping, temporal stability, and a browser/AWS runtime.
 
-For classifier training, `build_landmark_dataset.py` saves normalized landmark coordinates in a CSV. Image pixels are not copied into that CSV.
+## Demo
 
-No MediaPipe Python runtime, GUI, or GPU required. Inference uses ONNX Runtime CPU.
+Live endpoint:
 
-## Setup
+```text
+https://ta-3f9f9a8ba47c42fd8e03fc644317a698.ecs.eu-north-1.on.aws
+```
+
+The endpoint is enabled for demonstrations only and may be offline between sessions.
+
+Local browser demo:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
+uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
-Download these weights into `weights/`:
+Open `http://127.0.0.1:8000` and allow camera access. Frames are not written to disk.
 
-- `palm_detection_full_Nx3x192x192.onnx`
-- `hand_landmark_full_Nx3x224x224.onnx`
-
-Use download links in the [upstream model README](https://github.com/yakhyo/mediapipe-hand-landmark-onnx#models). `weights/`, `data/`, and `output/` are Git-ignored.
-
-## Run
-
-```bash
-python scripts/hand_pose_onnx.py \
-  "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Dataset Folders/1/img_001.jpg" \
-  --save-dir output
-```
-
-Multiple images:
-
-```bash
-python scripts/hand_pose_onnx.py \
-  "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Dataset Folders/1/img_001.jpg" \
-  "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Dataset Folders/2/img_001.jpg" \
-  --save-dir output
-```
-
-Output image shows hand skeleton, landmarks, handedness, and confidence.
-
-## Build landmark dataset
-
-Dataset folders become class labels. For example, every image under `Dataset Folders/1/` gets label `1`.
-
-```bash
-python scripts/build_landmark_dataset.py \
-  "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Dataset Folders" \
-  --output-csv data/landmarks.csv
-```
-
-For a faster balanced experiment, process 100 sampled images per class:
-
-```bash
-python scripts/build_landmark_dataset.py \
-  "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Dataset Folders" \
-  --max-per-class 100 \
-  --output-csv data/landmarks_100.csv
-```
-
-CSV contains one row per image, two fixed hand slots (`left`, `right`), confidence values, and 21 normalized `(x, y, z)` landmarks per hand. Coordinates are wrist-relative and scale-normalized, so image resolution and hand position matter less. `data/landmarks.csv` is ignored by Git.
-
-## Landmark order
+The reverse reference preview requires the TLFS23 assets at:
 
 ```text
-0       wrist
-1–4     thumb
-5–8     index
-9–12    middle
-13–16   ring
-17–20   pinky
+data/TLFS23 - Tamil Language Finger Spelling Image Dataset/
+├── ReadMe.txt
+└── Refrence Image/
 ```
 
-The model returns `(N, 21, 3)` landmarks for `N` hands. Later MLP training can use two fixed hand slots, wrist-relative normalization, hand scale, confidence, and hand-center position.
+The dataset is intentionally excluded from Git. Obtain it separately from the dataset owner before building Docker. The camera-only pipeline can still run without the reference images; the reverse preview then reports that references are unavailable.
 
-## Train and evaluate
-
-Run one command after `data/landmarks.csv` is complete:
+## Docker
 
 ```bash
-python main.py
+docker compose up --build
 ```
 
-This performs a stratified random 70/30 train/test split, trains the MLP, and saves everything under `results/`:
+Open `http://127.0.0.1:8000`. The container uses ONNXRuntime CPU inference and downloads RTMPose weights on first use. Compose persists the model cache.
+
+## AWS deployment
+
+The service runs on ECS Express Mode in `eu-north-1` (Stockholm): Linux x86-64 Fargate, an HTTPS Application Load Balancer, autoscaling, and CloudWatch logs. The Docker image is stored in private ECR.
+
+Build and push from Apple Silicon:
+
+```bash
+docker buildx build \
+  --platform linux/amd64 \
+  -t 108464427575.dkr.ecr.eu-north-1.amazonaws.com/tamil-fingerspelling:v5 \
+  --push .
+```
+
+Start or stop the public service:
+
+```bash
+./aws_start.sh
+./aws_stop.sh
+```
+
+Stopping removes the Express runtime infrastructure. Starting recreates it from ECR and may produce a new public URL.
+
+The current AWS image tag is `v5`.
+
+## User interaction
+
+- Green overlay: straight/open finger.
+- Red overlay: bent/closed finger.
+- Center text: committed Tamil message.
+- Preview: current sign.
+- Progress bar: stability time before commit.
+- `Stop camera` releases webcam access and stops frame uploads.
+- A fist inserts a space after the stability timer completes.
+- The reverse preview accepts typed Tamil text and displays the matching reference sign image from TLFS23.
+
+## Repository layout
 
 ```text
-results/
-├── mlp.joblib
-├── run.log
-├── metrics.json
-├── classification_report.csv
-├── confusion_matrix.csv
-├── feature_correlation.csv
-├── test_predictions.csv
-├── test_labels.npy
-└── test_predictions.npy
+core/pipeline.py                 Frame-to-text state machine
+models/rtmpose_utils.py          Hand post-processing
+models/geometry_features.py      Normalized landmark geometry
+models/finger_rules.py            Finger open/closed rules
+models/tamil_labels.py            TLFS23 Tamil labels
+scripts/realtime.py               Desktop webcam demo
+server.py                         FastAPI/WebSocket server
+web/                              Browser interface
+aws_start.sh / aws_stop.sh        AWS lifecycle scripts
+docs/                             Architecture, report, checklist, demo script
 ```
 
-Reported metrics: accuracy, balanced accuracy, macro precision/recall/F1, weighted F1, top-3 accuracy, per-class report, and confusion matrix. Feature correlation is diagnostic, not a performance metric.
+## Evaluation and limitations
 
-## Dataset attribution
+This project has two evaluation modes:
 
-Example images come from **TLFS23 – Tamil Language Finger Spelling Image Dataset**, containing 248 classes and 255,155 images. Dataset license: **CC BY 4.0**. Credit:
+1. **Static dataset evaluation:** 20 images from each of 247 non-background classes, 4,940 images total. This measures detector, finger-state, Tamil mapping, and image latency under photographed dataset conditions.
+2. **Interactive real-time evaluation:** the signer sees the detected hand pose and green/red finger feedback, adjusts hand placement, and holds the sign until commitment. In manual testing, the tested sign combinations worked reliably when the hands were clearly visible and correctly framed. This is a qualitative human-in-the-loop observation, not a formal live accuracy percentage.
 
-> Chirranjeavi M, Bavesh Ram S, Gokulraj Varatharajan, Aaruran Sundaresh, Binoy Nair, Harikumar M E. *TLFS23 - Tamil Language Finger Spelling Image Dataset*. Mendeley Data, 2023. DOI: [10.17632/39kzs5pxmk.2](https://doi.org/10.17632/39kzs5pxmk.2).
+The static dataset contains more out-of-frame, occluded, merged, and poorly framed images than the interactive use case. Therefore its 54.8% exact folder-class result should not be presented as the real-time user experience, and the live observation should not be presented as a statistically measured accuracy. Report both conditions separately. No model training is required by the current pipeline.
 
-Dataset page: [Mendeley Data](https://data.mendeley.com/datasets/39kzs5pxmk/2). Research article: [TLFS23 paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC10790027/).
+Run the reproducible dataset benchmark:
 
-## Model attribution
-
-ONNX inference implementation and converted hand models adapted from [yakhyo/mediapipe-hand-landmark-onnx](https://github.com/yakhyo/mediapipe-hand-landmark-onnx). Upstream repository identifies the implementation and weights as Apache-2.0. Original hand model topology comes from [Google MediaPipe Hands](https://developers.google.com/mediapipe/solutions/vision/hand_landmarker).
-
-## Files
-
-```text
-scripts/hand_pose_onnx.py  # inference CLI
-scripts/build_landmark_dataset.py  # images → landmark CSV
-main.py                    # split → train → evaluate → save results
-models/                    # ONNX model architecture/post-processing
-requirements.txt           # CPU dependencies
+```bash
+python scripts/evaluate_dataset.py
 ```
+
+See [`docs/EVALUATION.md`](docs/EVALUATION.md) for metric definitions, the latest sample results, and the short real-time evaluation protocol.
+
+Known limitations:
+
+- RTMPose can miss or merge hands when they overlap or leave the frame.
+- Rules are sensitive to occlusion and unusual camera angles.
+- Real-time performance benefits from the visible feedback loop: users can reposition their hands before a sign is committed.
+- This is fingerspelling assistance, not continuous Tamil sign-language translation.
+- AWS demo uses CPU inference; latency depends on network and Fargate load.
+
+## License
+
+Project code is MIT licensed. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Dataset images and model weights retain their own licenses and are not redistributed here.
+
+## Submission documents
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system and AWS runtime architecture.
+- [`docs/architecture.mmd`](docs/architecture.mmd) — Mermaid architecture source.
+- [`docs/TECHNICAL_REPORT.md`](docs/TECHNICAL_REPORT.md) — technical report draft.
+- [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) — five-minute demonstration plan.
+- [`docs/SUBMISSION_CHECKLIST.md`](docs/SUBMISSION_CHECKLIST.md) — competition readiness checklist.

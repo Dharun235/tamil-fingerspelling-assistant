@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tamil Fingerspelling Assistant</title>
+  <link rel="stylesheet" href="/web/style.css">
+</head>
+<body>
+  <main>
+    <h1>Tamil Fingerspelling Assistant</h1>
+    <section class="camera-card">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas"></canvas>
+      <div class="legend"><span class="on">Straight finger</span><span class="off">Bent finger</span></div>
+    </section>
+    <section class="message-card">
+      <div id="message">(empty)</div>
+      <div id="preview">Preview: —</div>
+      <div class="status-row"><span id="status">UNLOCKED</span><span id="timer">0/350 ms</span></div>
+      <div class="progress"><div id="progress-bar"></div></div>
+    </section>
+    <section class="reverse-card">
+      <label for="text-input">Type Tamil to see the reference sign</label>
+      <input id="text-input" type="text" inputmode="text" autocomplete="off" placeholder="Type a Tamil character...">
+      <div id="reference-empty">Reference sign appears here</div>
+      <img id="reference-image" alt="Tamil fingerspelling reference sign">
+      <div id="reference-label"></div>
+    </section>
+    <button id="start-camera" class="start-button">Enable camera</button>
+    <p id="connection">Starting camera…</p>
+  </main>
+  <script src="/web/app.js"></script>
+</body>
+</html>
