@@ -35,7 +35,7 @@ uvicorn server:app --host 127.0.0.1 --port 8000
 
 Open `http://127.0.0.1:8000` and allow camera access. Frames are not written to disk.
 
-The reverse reference preview requires the TLFS23 assets at:
+The reverse reference preview uses a replaceable dataset asset root. The default TLFS23 layout is:
 
 ```text
 data/TLFS23 - Tamil Language Finger Spelling Image Dataset/
@@ -45,6 +45,21 @@ data/TLFS23 - Tamil Language Finger Spelling Image Dataset/
 
 The dataset is intentionally excluded from Git. Obtain it separately from the dataset owner before building Docker. The camera-only pipeline can still run without the reference images; the reverse preview then reports that references are unavailable.
 
+To use another compatible dataset, preserve this layout and set the paths before starting the server:
+
+```bash
+export TLFS_DATA_ROOT=/path/to/dataset
+export TLFS_REFERENCE_DIR=/path/to/dataset/Refrence\ Image
+export TLFS_LABELS_PATH=/path/to/dataset/ReadMe.txt
+uvicorn server:app --host 127.0.0.1 --port 8000
+```
+
+The reference filenames must begin with a numeric class ID, for example `34-Ki.jpg`, and `ReadMe.txt` must map that ID to the displayed Tamil character. The offline evaluator accepts a replacement dataset directly:
+
+```bash
+python scripts/evaluate_dataset.py --dataset-root /path/to/dataset
+```
+
 ## Docker
 
 ```bash
@@ -52,6 +67,17 @@ docker compose up --build
 ```
 
 Open `http://127.0.0.1:8000`. The container uses ONNXRuntime CPU inference and downloads RTMPose weights on first use. Compose persists the model cache.
+
+For a replacement reference dataset in Docker, mount it read-only and set the same variables:
+
+```bash
+docker run --rm -p 8000:8000 \
+  -v /path/to/dataset:/app/custom_dataset:ro \
+  -e TLFS_DATA_ROOT=/app/custom_dataset \
+  -e TLFS_REFERENCE_DIR="/app/custom_dataset/Refrence Image" \
+  -e TLFS_LABELS_PATH=/app/custom_dataset/ReadMe.txt \
+  tamil-fingerspelling-fingerspelling:latest
+```
 
 ## AWS deployment
 

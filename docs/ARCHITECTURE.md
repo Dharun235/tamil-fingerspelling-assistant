@@ -30,7 +30,7 @@ The offline evaluator writes one CSV row per image so every stage can be inspect
 
 ## Offline and live paths
 
-The dataset folders are an evaluation fixture. Folder labels provide expected hand combinations and finger states. The evaluator processes a fixed number of images per class, writes stage outputs, and computes hand, finger, class, and latency metrics. This is a proxy because the folder mapping is not manually verified landmark ground truth.
+The dataset folders are a replaceable evaluation fixture. Folder labels provide expected hand combinations and finger states. The evaluator accepts `--dataset-root`, processes a fixed number of images per class, writes stage outputs, and computes hand, finger, class, and latency metrics. This is a proxy because the folder mapping is not manually verified landmark ground truth.
 
 The browser captures frames and sends JPEGs through a WebSocket. The server runs the same detector and rules used by the offline evaluator. The browser renders intermediate feedback before the stability timer commits text. The signer can reposition a poorly framed hand; this is an intended human-in-the-loop property.
 

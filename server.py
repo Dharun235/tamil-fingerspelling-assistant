@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import io
+import os
 import re
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -18,7 +19,10 @@ from fastapi.staticfiles import StaticFiles
 from core.pipeline import RealtimePipeline
 
 ROOT = Path(__file__).resolve().parent
-REFERENCE_DIR = ROOT / "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/Refrence Image"
+DEFAULT_DATA_ROOT = ROOT / "data/TLFS23 - Tamil Language Finger Spelling Image Dataset"
+DATA_ROOT = Path(os.environ.get("TLFS_DATA_ROOT", DEFAULT_DATA_ROOT))
+REFERENCE_DIR = Path(os.environ.get("TLFS_REFERENCE_DIR", DATA_ROOT / "Refrence Image"))
+LABELS_PATH = Path(os.environ.get("TLFS_LABELS_PATH", DATA_ROOT / "ReadMe.txt"))
 app = FastAPI(title="Tamil Fingerspelling Assistant")
 app.mount("/web", StaticFiles(directory=ROOT / "web"), name="web")
 if REFERENCE_DIR.exists():
@@ -48,9 +52,10 @@ def references():
     """Return Tamil-character to reference-image mappings for reverse display."""
     if not REFERENCE_DIR.exists():
         return {"available": False, "references": {}}
-    labels_path = ROOT / "data/TLFS23 - Tamil Language Finger Spelling Image Dataset/ReadMe.txt"
     labels = {}
-    for line in labels_path.read_text(encoding="utf-8").splitlines():
+    if not LABELS_PATH.exists():
+        return {"available": False, "references": {}}
+    for line in LABELS_PATH.read_text(encoding="utf-8").splitlines():
         parts = line.strip().split(None, 1)
         if parts and parts[0].isdigit() and len(parts) > 1:
             labels[parts[0]] = parts[1].split("(", 1)[0].strip()
