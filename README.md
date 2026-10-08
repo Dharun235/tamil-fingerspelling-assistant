@@ -45,7 +45,7 @@ The script prints the current HTTPS URL. Open that URL, allow camera access, sho
 ./aws_stop.sh
 ```
 
-The recorded demo video should be uploaded separately to Devpost. The repository contains the [technical report](docs/Tamil_Fingerspelling_Technical_Report.pdf), [complete class mapping](docs/TLFS23_CLASS_MAPPING.md), and visual assets used in the submission.
+The [recorded demo video](https://youtu.be/LY9RouhBgpQ), [technical report](docs/Tamil_Fingerspelling_Technical_Report.pdf), [complete class mapping](docs/TLFS23_CLASS_MAPPING.md), and visual assets document the project for portfolio and research reference.
 
 The reverse reference preview uses a replaceable dataset asset root. The default TLFS23 layout is:
 
@@ -142,7 +142,7 @@ scripts/realtime.py               Desktop webcam demo
 server.py                         FastAPI/WebSocket server
 web/                              Browser interface
 aws_start.sh / aws_stop.sh        AWS lifecycle scripts
-docs/                             Submission report, mapping, and diagrams
+docs/                             Technical report, mapping, and diagrams
 ```
 
 ## Evaluation and limitations
@@ -174,9 +174,9 @@ Known limitations:
 
 Project code is MIT licensed. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Dataset images and model weights retain their own licenses and are not redistributed here.
 
-## Submission artifacts
+## Project artifacts
 
-- [Video demo](https://youtu.be/LY9RouhBgpQ) — hosted demo recording.
+- [Video demo](https://youtu.be/LY9RouhBgpQ) — hosted project walkthrough.
 - [`docs/Tamil_Fingerspelling_Technical_Report.pdf`](docs/Tamil_Fingerspelling_Technical_Report.pdf) — formatted technical report.
 - [`docs/TLFS23_CLASS_MAPPING.md`](docs/TLFS23_CLASS_MAPPING.md) — complete 247-class mapping.
 - `docs/assets/` — report and presentation diagrams.
