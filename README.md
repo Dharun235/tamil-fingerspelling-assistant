@@ -4,7 +4,7 @@ Real-time Tamil fingerspelling assistance from a webcam. The browser displays de
 
 ## Pipeline
 
-```text
+```bash
 webcam → browser JPEG → FastAPI/WebSocket → OpenCV 5 preprocessing
         → RTMPose hand detection + landmarks → geometric finger rules
         → Tamil mapping → Tamil text
@@ -16,15 +16,9 @@ This is an inference-and-integration project, not a model-training project. It c
 
 ## Demo
 
-Live endpoint:
+### Quick local demo
 
-```text
-https://ta-89507d6158f8458c88ac7b38194d8efc.ecs.eu-north-1.on.aws
-```
-
-The endpoint is enabled for demonstrations only and may be offline between sessions.
-
-Local browser demo:
+Run the browser demo locally:
 
 ```bash
 python3 -m venv .venv
@@ -34,6 +28,22 @@ uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
 Open `http://127.0.0.1:8000` and allow camera access. Frames are not written to disk.
+
+### AWS demo
+
+The public AWS service is intentionally stopped between demonstrations to avoid unnecessary cost. Start it with:
+
+```bash
+./aws_start.sh
+```
+
+The script prints the current HTTPS URL. Open that URL, allow camera access, show a sign, and hold it until the stability bar commits the Tamil character. Stop the service afterward:
+
+```bash
+./aws_stop.sh
+```
+
+The recorded demo video should be uploaded separately to Devpost. The repository contains the [technical report](docs/Tamil_Fingerspelling_Technical_Report.pdf), [complete class mapping](docs/TLFS23_CLASS_MAPPING.md), and visual assets used in the submission.
 
 The reverse reference preview uses a replaceable dataset asset root. The default TLFS23 layout is:
 
@@ -130,7 +140,7 @@ scripts/realtime.py               Desktop webcam demo
 server.py                         FastAPI/WebSocket server
 web/                              Browser interface
 aws_start.sh / aws_stop.sh        AWS lifecycle scripts
-docs/                             Submission report, mapping, diagrams, and deck
+docs/                             Submission report, mapping, and diagrams
 ```
 
 ## Evaluation and limitations
@@ -166,5 +176,4 @@ Project code is MIT licensed. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md
 
 - [`docs/Tamil_Fingerspelling_Technical_Report.pdf`](docs/Tamil_Fingerspelling_Technical_Report.pdf) — formatted technical report.
 - [`docs/TLFS23_CLASS_MAPPING.md`](docs/TLFS23_CLASS_MAPPING.md) — complete 247-class mapping.
-- [`docs/Tamil_Fingerspelling_Demo_Deck.pptx`](docs/Tamil_Fingerspelling_Demo_Deck.pptx) — presentation deck.
 - `docs/assets/` — report and presentation diagrams.
