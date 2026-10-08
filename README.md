@@ -16,6 +16,8 @@ This is an inference-and-integration project, not a model-training project. It c
 
 ## Demo
 
+Video demo: [Tamil Fingerspelling Assistant — Real-Time OpenCV 5 Demo](https://youtu.be/LY9RouhBgpQ)
+
 ### Quick local demo
 
 Run the browser demo locally:
@@ -174,6 +176,7 @@ Project code is MIT licensed. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md
 
 ## Submission artifacts
 
+- [Video demo](https://youtu.be/LY9RouhBgpQ) — hosted demo recording.
 - [`docs/Tamil_Fingerspelling_Technical_Report.pdf`](docs/Tamil_Fingerspelling_Technical_Report.pdf) — formatted technical report.
 - [`docs/TLFS23_CLASS_MAPPING.md`](docs/TLFS23_CLASS_MAPPING.md) — complete 247-class mapping.
 - `docs/assets/` — report and presentation diagrams.
