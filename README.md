@@ -19,7 +19,7 @@ This is an inference-and-integration project, not a model-training project. It c
 Live endpoint:
 
 ```text
-https://ta-3f9f9a8ba47c42fd8e03fc644317a698.ecs.eu-north-1.on.aws
+https://ta-89507d6158f8458c88ac7b38194d8efc.ecs.eu-north-1.on.aws
 ```
 
 The endpoint is enabled for demonstrations only and may be offline between sessions.
@@ -59,6 +59,10 @@ The reference filenames must begin with a numeric class ID, for example `34-Ki.j
 ```bash
 python scripts/evaluate_dataset.py --dataset-root /path/to/dataset
 ```
+
+### TLFS23 dataset attribution
+
+This project uses the **TLFS23 - Tamil Language Finger Spelling Image Dataset** for Tamil labels, reference images, and offline evaluation. Obtain the dataset from the original [Mendeley Data record](https://data.mendeley.com/datasets/39kzs5pxmk/2), DOI [10.17632/39kzs5pxmk.2](https://doi.org/10.17632/39kzs5pxmk.2), and comply with its **CC BY 4.0** license. Cite: Chirranjeavi, M., Bavesh Ram, S., Gokulraj Varatharajan, Aaruran Sundaresh, Binoy B. Nair, and Harikumar M. E., “TLFS23 - Tamil Language Finger Spelling Image Dataset,” Mendeley Data, version 2, 2023. The dataset is excluded from Git and is not redistributed by this project.
 
 ## Docker
 
@@ -126,7 +130,7 @@ scripts/realtime.py               Desktop webcam demo
 server.py                         FastAPI/WebSocket server
 web/                              Browser interface
 aws_start.sh / aws_stop.sh        AWS lifecycle scripts
-docs/                             Architecture, report, checklist, demo script
+docs/                             Submission report, mapping, diagrams, and deck
 ```
 
 ## Evaluation and limitations
@@ -144,7 +148,7 @@ Run the reproducible dataset benchmark:
 python scripts/evaluate_dataset.py
 ```
 
-See [`docs/EVALUATION.md`](docs/EVALUATION.md) for metric definitions, the latest sample results, and the short real-time evaluation protocol.
+See the evaluation and latency tables in [`docs/Tamil_Fingerspelling_Technical_Report.pdf`](docs/Tamil_Fingerspelling_Technical_Report.pdf). The raw benchmark outputs remain under `results/dataset_eval_20/`.
 
 Known limitations:
 
@@ -158,10 +162,9 @@ Known limitations:
 
 Project code is MIT licensed. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Dataset images and model weights retain their own licenses and are not redistributed here.
 
-## Submission documents
+## Submission artifacts
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system and AWS runtime architecture.
-- [`docs/architecture.mmd`](docs/architecture.mmd) — Mermaid architecture source.
-- [`docs/TECHNICAL_REPORT.md`](docs/TECHNICAL_REPORT.md) — technical report draft.
-- [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) — five-minute demonstration plan.
-- [`docs/SUBMISSION_CHECKLIST.md`](docs/SUBMISSION_CHECKLIST.md) — competition readiness checklist.
+- [`docs/Tamil_Fingerspelling_Technical_Report.pdf`](docs/Tamil_Fingerspelling_Technical_Report.pdf) — formatted technical report.
+- [`docs/TLFS23_CLASS_MAPPING.md`](docs/TLFS23_CLASS_MAPPING.md) — complete 247-class mapping.
+- [`docs/Tamil_Fingerspelling_Demo_Deck.pptx`](docs/Tamil_Fingerspelling_Demo_Deck.pptx) — presentation deck.
+- `docs/assets/` — report and presentation diagrams.
