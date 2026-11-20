@@ -18,6 +18,8 @@ This is an inference-and-integration project, not a model-training project. It c
 
 Video demo: [Tamil Fingerspelling Assistant — Real-Time OpenCV 5 Demo](https://youtu.be/LY9RouhBgpQ)
 
+Devpost: [Bi-directional Real-Time Fingerspelling Assistant](https://devpost.com/software/bi-directional-real-time-fingerspelling-assistant)
+
 ### Quick local demo
 
 Run the browser demo locally:
